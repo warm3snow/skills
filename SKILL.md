@@ -1,5 +1,5 @@
 ---
-name: ai-repo-docs
+name: ai-friendly-skill
 description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为代码仓库生成 AI 友好化文档时使用，包括：(1) 生成 AGENTS.md（AI Agent 专属指南）(2) 生成或补全 README.md (3) 生成 docs/architecture.md 架构文档 (4) 生成 docs/domain-model.md 领域模型文档 (5) 生成 docs/api.md 接口文档 (6) 生成 docs/decision-log.md 设计决策日志 (7) 生成 docs/runbook.md 运维手册 (8) 对整个仓库执行完整 AI 友好化。触发场景："帮我做 AI 友好化"、"生成 AGENTS.md"、"写项目文档"、"让 AI 能理解这个仓库"、"ai-friendly"、"帮我写架构文档"。
 ---
 
