@@ -1,0 +1,48 @@
+# [服务名称]
+> [一句话描述服务的业务职责]
+
+## 🎯 服务职责
+**负责：**
+- [职责1]
+- [职责2]
+
+**不负责（边界说明）：**
+- [不在此服务范围内的事项]
+
+## 🛠️ 技术栈
+- 语言/框架：Go 1.21 + Gin
+- 数据库：MySQL 8.0 + Redis 7.0
+- 消息队列：Kafka（如有）
+- 部署：Docker + K8s
+
+## ⚡ 快速启动
+git clone [repo-url] && cd [repo-name]
+make deps
+cp config/config.example.yaml config/config.local.yaml
+docker-compose up -d
+make run
+curl http://localhost:8080/health
+
+## 📁 目录结构
+[在此粘贴 tree 命令输出，并为每行加注释]
+
+## 🔗 依赖关系
+| 依赖服务 | 调用方式 | 用途 |
+|----------|----------|------|
+| [服务名] | gRPC | [用途] |
+
+## 📖 文档索引
+| 文档 | 说明 |
+|------|------|
+| AGENTS.md | AI Agent 开发指南（AI 必读） |
+| docs/architecture.md | 系统架构设计 |
+| docs/api.md | 接口文档 |
+| docs/domain-model.md | 领域模型说明 |
+| docs/decision-log.md | 设计决策日志 |
+| docs/runbook.md | 运维操作手册 |
+
+## 👥 维护团队
+| 角色 | 姓名 | 联系方式 |
+|------|------|----------|
+| Owner | [姓名] | [企业微信/邮箱] |
+| 备份 | [姓名] | [企业微信/邮箱] |
