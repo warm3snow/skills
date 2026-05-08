@@ -54,6 +54,8 @@ description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为
 
 **输出路径：** `./docs/architecture.md`
 
+参考 `references/architecture-templates.md`，按实际仓库情况填充：
+
 1. ASCII 图画出服务上下游位置
 2. 描述 2-3 个核心业务流程数据流
 3. 提取代码中设计决策注释，整理为 ADR 格式
@@ -62,6 +64,8 @@ description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为
 ### 任务 D：生成领域模型文档
 
 **输出路径：** `./docs/domain-model.md`
+
+参考 `references/domain-model-templates.md`，按实际仓库情况填充：
 
 1. 读取 model / entity / domain 目录
 2. 识别核心业务实体（跳过 Response、Config 等技术性 struct）
@@ -81,14 +85,14 @@ description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为
 
 **输出路径：** `./docs/decision-log.md`
 
-搜索 `// NOTE:` `// IMPORTANT:` `// FIXME:` `// TODO:` 注释及 git commit，整理为 ADR 格式。无历史时生成空模板。
+参考 `references/decision-log-templates.md`。搜索 `// NOTE:` `// IMPORTANT:` `// FIXME:` `// TODO:` 注释及 git commit，整理为 ADR 格式。无历史时生成空模板。
 
 
 ### 任务 G：生成运维手册
 
 **输出路径：** `./docs/runbook.md`
 
-从代码提取健康检查接口、错误日志关键词、超时/重试配置、DB 连接失败处理逻辑。信息不足用 `[待补充]` 占位。
+参考 `references/runbook-templates.md`。从代码提取健康检查接口、错误日志关键词、超时/重试配置、DB 连接失败处理逻辑。信息不足用 `[待补充]` 占位。
 
 
 ## 完整 AI 友好化执行顺序
@@ -122,4 +126,7 @@ Step 9: 输出完成摘要 + 所有 [待确认] 项列表
 
 - `references/AGENTS.md.template` — AGENTS.md 完整模板
 - `references/README.md.template` — README.md 完整模板
-- `references/docs-templates.md` — architecture / domain-model / decision-log / runbook 模板合集
+- `references/architecture-templates.md` — `docs/architecture.md` 架构文档模板
+- `references/domain-model-templates.md` — `docs/domain-model.md` 领域模型文档模板
+- `references/decision-log-templates.md` — `docs/decision-log.md` 设计决策日志模板
+- `references/runbook-templates.md` — `docs/runbook.md` 运维手册模板
