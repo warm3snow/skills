@@ -1,15 +1,26 @@
 ---
 name: ai-friendly-skill
-description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为代码仓库生成 AI 友好化文档时使用，包括：(1) 生成 AGENTS.md（AI Agent 专属指南）(2) 生成或补全 README.md (3) 生成 docs/architecture.md 架构文档 (4) 生成 docs/domain-model.md 领域模型文档 (5) 生成 docs/api.md 接口文档 (6) 生成 docs/decision-log.md 设计决策日志 (7) 生成 docs/runbook.md 运维手册 (8) 对整个仓库执行完整 AI 友好化。触发场景："帮我做 AI 友好化"、"生成 AGENTS.md"、"写项目文档"、"让 AI 能理解这个仓库"、"ai-friendly"、"帮我写架构文档"。
+description: 微服务和跨团队系统 AI 友好化 / AI 协作推进 skill。当用户需要为单个代码仓库生成 AI 友好化文档时使用 repo-mode，包括生成 AGENTS.md、README.md、架构、领域模型、API、决策日志和运维手册；当用户需要推进跨微服务、跨小组需求时使用 system-mode，包括生成全局系统上下文、服务目录、服务依赖图、跨服务契约索引、功能路由表、跨服务 RFC、小组任务单和可复制给各小组 AI 的 vibe coding prompt。触发场景："帮我做 AI 友好化"、"生成 AGENTS.md"、"跨服务 AI 协作"、"多微服务需求拆分"、"生成跨团队 RFC"、"生成小组任务单"、"让 AI 理解多个微服务关系"、"ai-friendly"。
 ---
 
-# AI 仓库文档生成 Skill
+# AI 友好化与跨服务协作 Skill
 
-本 skill 指导 code agent（Claude Code / Cursor / CodeBuddy 等）为微服务仓库生成一套 AI 友好化文档，让新员工和 AI agent 能快速理解仓库并独立扩展功能。
+本 skill 指导 code agent（Claude Code / Cursor / CodeBuddy 等）生成两类产物：
+
+1. **repo-mode：单仓库 AI 友好化** —— 为某个微服务仓库生成 `AGENTS.md`、README、架构、领域模型、API、决策日志和运维手册，让 AI 能在单仓库内安全开发。
+2. **system-mode：跨服务 AI 协作推进** —— 为多微服务、多小组场景生成全局上下文、服务目录、服务关系图、契约索引、跨服务 RFC、小组任务单和 vibe coding prompt。目标是统一上下文和任务拆分，不是让一个 AI 越权统一修改所有服务代码。
+
+## 模式选择
+
+- 用户要求“生成 AGENTS.md / 单个仓库 AI 友好化 / 写项目文档”时，使用 **repo-mode**。
+- 用户要求“跨服务协作 / 多个微服务关系 / 需求涉及多个小组 / 生成 RFC / 拆分小组任务 / 方便 vibe coding 推进”时，使用 **system-mode**。
+- 如果用户没有明确模式，根据输入对象判断：单个仓库用 repo-mode；多个仓库、多个服务或跨团队需求用 system-mode。
 
 ## 执行前准备
 
-在开始生成任何文档前，先执行以下探查步骤：
+### repo-mode 探查步骤
+
+在开始生成单仓库文档前，先执行以下探查步骤：
 
 ```
 1. 读取仓库根目录文件列表
@@ -21,9 +32,23 @@ description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为
 7. 扫描 internal/service 目录（了解业务逻辑模块）
 ```
 
-探查完成后，列出你的理解摘要，再开始写文档。
+探查完成后，列出理解摘要；除非用户明确要求先确认，否则继续生成目标文档。
 
-## 文档生成任务
+### system-mode 输入和探查步骤
+
+跨服务场景优先收集以下输入；缺失时用 `[待确认]` 占位，不编造：
+
+```
+1. 服务清单：服务名、仓库地址/路径、所属小组、负责人
+2. 已有上下文：各服务 README.md、AGENTS.md、docs/api.md、proto/openapi、配置文件
+3. 运行时依赖：HTTP/RPC client、MQ topic、DB/schema、缓存 key、服务发现配置
+4. 需求输入：业务目标、可能涉及服务、已知接口或字段、上线时间约束
+5. 组织边界：哪个小组负责哪个服务，哪些服务不可由当前 AI 直接修改
+```
+
+system-mode 的默认行为：**先产出分析、RFC、任务单和 prompt，不直接跨仓库写代码**。如果只能访问部分仓库，基于可见信息生成初稿，并明确列出需要各小组补充确认的清单。
+
+## repo-mode：单仓库文档生成任务
 
 ### 任务 A：生成 AGENTS.md ⭐ 最高优先级
 
@@ -103,10 +128,102 @@ description: 微服务仓库 AI 友好化文档生成 skill。当用户需要为
 参考 `references/runbook-templates.md`。从代码提取健康检查接口、错误日志关键词、超时/重试配置、DB 连接失败处理逻辑。信息不足用 `[待补充]` 占位。
 
 
-## 完整 AI 友好化执行顺序
+## system-mode：跨服务 AI 协作任务
+
+### 任务 H：生成全局系统上下文
+
+**输出路径：** `./ai-system-context/SYSTEM.md`
+
+参考 `references/cross-service-ai-collaboration-templates.md`。必须包含：系统一句话描述、核心业务域、全局职责边界、核心链路、AI 使用约束。信息不足时标注 `[待确认]`。
+
+### 任务 I：生成服务目录和服务卡片
+
+**输出路径：**
+- `./ai-system-context/SERVICE-CATALOG.md`
+- `./ai-system-context/services/<service-name>.md`
+
+要求：
+1. 每个服务记录所属小组、仓库、职责、不负责事项、技术栈、数据归属、对外能力、负责人。
+2. 每个服务卡片控制在 1-2 页，便于小组维护。
+3. 明确“本服务负责什么 / 不负责什么”，避免 AI 把需求错放到错误服务。
+4. 无法确认的负责人、仓库、字段语义标注 `[待确认]`。
+
+### 任务 J：生成服务依赖图
+
+**输出路径：** `./ai-system-context/SERVICE-GRAPH.md`
+
+要求：
+1. 使用 Mermaid `flowchart` 画出服务、DB、MQ、外部系统之间的关系。
+2. 用表格列出上游、下游、协议、用途、契约位置、归属小组、风险。
+3. 只表达有证据的依赖；推断依赖标注 `[待确认]`。
+
+### 任务 K：生成跨服务契约索引
+
+**输出路径：** `./ai-system-context/CONTRACTS.md`
+
+要求：
+1. 收集 HTTP、RPC、MQ、共享读模型等跨服务契约。
+2. 标注提供方、调用方/消费方、契约位置、兼容性等级。
+3. 字段级说明必须包含业务含义、是否必填、是否可删除、变更规则。
+4. 默认规则：允许新增兼容字段；禁止删除字段或修改旧字段语义；新增枚举值必须通知消费方。
+
+### 任务 L：生成功能路由表
+
+**输出路径：** `./ai-system-context/FEATURE-ROUTING.md`
+
+要求：
+1. 按业务功能域归纳通常涉及哪些服务和小组。
+2. 对每个功能域说明服务涉及原因、常见改动类型、主责服务、推荐推进顺序和契约风险。
+3. 该文件用于需求早期影响面分析，不替代具体 RFC。
+
+### 任务 M：生成跨服务功能 RFC
+
+**输出路径：** `./ai-system-context/rfcs/<feature-name>.md`
+
+输入：业务需求描述、可能涉及服务、已知约束。
+
+要求：
+1. 先说明需求背景、业务目标和非目标。
+2. 列出涉及服务、小组、是否必须改、改动类型、涉及原因和待确认项。
+3. 画出跨服务数据流或时序图。
+4. 说明契约变更、兼容策略、发布顺序、回滚策略。
+5. 拆出每个小组的输入、输出、开发任务、测试任务和文档任务。
+6. 明确风险和待确认项；不确定内容不得编造。
+
+### 任务 N：生成小组任务单
+
+**输出路径：** `./ai-system-context/tasks/<feature-name>/<team-or-service>.md`
+
+要求：
+1. 每个任务单只面向一个小组或一个服务。
+2. 明确本服务任务边界，禁止要求该小组修改其他小组服务。
+3. 包含输入依赖、本服务交付、建议实现顺序、验收标准和给本小组 AI 的 prompt。
+4. 如果某服务只需确认无需改代码，也生成“确认型任务单”。
+
+### 任务 O：生成 vibe coding prompt 集
+
+**输出路径：** `./ai-system-context/VIBE-CODING-PROMPTS.md`
+
+要求：
+1. 生成“全局分析 Prompt”：用于先做影响面分析，不直接写代码。
+2. 生成“单服务执行 Prompt”：用于各小组在自己仓库内开发。
+3. Prompt 必须强调：只负责当前服务，不跨仓库修改其他服务；先输出计划、契约影响和测试计划。
+
+### 任务 P：生成跨服务变更 SOP
+
+**输出路径：** `./ai-system-context/CHANGE-PLAYBOOKS.md`
+
+要求：
+1. 覆盖新增跨服务功能、接口字段变更、MQ 事件变更、灰度发布、回滚、联调。
+2. 强调先 RFC、再任务单、再各服务独立开发。
+3. 明确跨服务契约默认兼容策略。
+
+## 完整执行顺序
+
+### repo-mode 执行顺序
 
 ```
-Step 1: 探查仓库，输出理解摘要，等待用户确认或纠正
+Step 1: 探查仓库，输出理解摘要；除非用户要求确认，否则继续执行
 Step 2: 生成 AGENTS.md
 Step 3: 补全 README.md
 Step 4: 生成 docs/architecture.md
@@ -118,25 +235,56 @@ Step 9: 文档索引一致性校验 —— 对照 README 的"文档索引"，逐
 Step 10: 输出完成摘要 + 所有 [待确认] 项列表 + 本次补齐的骨架文档清单
 ```
 
-每完成一个文档后告知用户，不要一次性全部输出。
+### system-mode 执行顺序
+
+```
+Step 1: 收集服务清单、仓库/文档路径、所属小组、需求描述；缺失项标注 [待确认]
+Step 2: 生成 ai-system-context/SYSTEM.md
+Step 3: 生成 SERVICE-CATALOG.md 和 services/<service-name>.md
+Step 4: 生成 SERVICE-GRAPH.md
+Step 5: 生成 CONTRACTS.md
+Step 6: 生成 FEATURE-ROUTING.md
+Step 7: 如输入了具体需求，生成 rfcs/<feature-name>.md
+Step 8: 如生成了 RFC，继续生成 tasks/<feature-name>/<team-or-service>.md
+Step 9: 生成或更新 VIBE-CODING-PROMPTS.md 和 CHANGE-PLAYBOOKS.md
+Step 10: 输出推进摘要 + 各小组待确认项 + 契约风险 + 建议推进顺序
+```
+
+system-mode 每次输出都应强调：**本 skill 产出跨团队协作材料，不替代各小组代码评审、开发和发布流程**。
 
 
 ## 质量检查清单
 
+### 通用检查
 - [ ] 业务描述使用业务语言，非纯技术术语
 - [ ] 不确定内容已标注 `[需人工确认]` 或 `[待确认]`
 - [ ] 没有编造不存在的接口、字段或业务规则
+- [ ] 文档间引用路径正确
+
+### repo-mode 检查
 - [ ] "添加新功能步骤"基于实际目录结构
 - [ ] 枚举字段每个值都有业务含义说明
-- [ ] 文档间引用路径正确
 - [ ] README 文档索引中的每个条目，在 `docs/` 下都有对应文件（至少是骨架）
+
+### system-mode 检查
+- [ ] 服务职责边界清晰区分“负责 / 不负责”
+- [ ] 每个服务都标注所属小组、仓库、数据归属和契约位置；缺失项标注 `[待确认]`
+- [ ] 服务依赖图只表达有证据的依赖，推断关系已标注 `[待确认]`
+- [ ] 契约索引包含提供方、消费方、字段语义、兼容性规则
+- [ ] RFC 明确业务目标、非目标、数据流、契约变更、发布顺序和回滚策略
+- [ ] 小组任务单只要求当前小组/服务交付，不越权要求修改其他服务
+- [ ] vibe coding prompt 明确“先分析和计划，不直接跨仓库写代码”
 
 
 ## 参考模板
 
+### repo-mode 模板
 - `references/AGENTS.md.template` — AGENTS.md 完整模板
 - `references/README.md.template` — README.md 完整模板
 - `references/architecture-templates.md` — `docs/architecture.md` 架构文档模板
 - `references/domain-model-templates.md` — `docs/domain-model.md` 领域模型文档模板
 - `references/decision-log-templates.md` — `docs/decision-log.md` 设计决策日志模板
 - `references/runbook-templates.md` — `docs/runbook.md` 运维手册模板
+
+### system-mode 模板
+- `references/cross-service-ai-collaboration-templates.md` — 跨服务全局上下文、服务目录、服务卡片、服务依赖图、契约索引、功能路由表、跨服务 RFC、小组任务单、变更 SOP 和 vibe coding prompt 模板

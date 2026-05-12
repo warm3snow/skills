@@ -112,3 +112,62 @@ AI（无论是 Copilot、Cursor 还是 Claude Code）理解代码仓库的方式
 ```
 
 这段内容对新员工和 AI Agent 都是**最高价值**的信息——它把隐性的架构约定变成了显性的操作流程。
+
+---
+
+## 五、跨服务 / 跨团队 AI 协作
+
+当微服务分属不同小组、无法由一个 AI 统一改代码时，AI 友好化目标应从“统一编码”调整为“统一上下文、统一影响面分析、统一任务拆分”。
+
+### 推荐新增一个全局上下文仓库
+
+```text
+ai-system-context/
+├── SYSTEM.md                    # 全局系统总览
+├── SERVICE-CATALOG.md           # 服务目录：服务归属、职责、仓库、数据归属
+├── SERVICE-GRAPH.md             # 服务依赖图：HTTP/RPC/MQ/DB/外部系统
+├── CONTRACTS.md                 # 跨服务契约索引：接口、RPC、MQ、字段兼容性
+├── FEATURE-ROUTING.md           # 功能路由表：某类需求通常涉及哪些服务
+├── CHANGE-PLAYBOOKS.md          # 跨服务变更 SOP
+├── VIBE-CODING-PROMPTS.md       # 可复制给各小组 AI 的 prompt
+├── rfcs/                        # 跨服务功能 RFC
+├── tasks/                       # 按小组/服务拆分的任务单
+└── services/                    # 每个服务一张服务卡片
+```
+
+### 核心原则
+
+| 原则 | 说明 |
+|------|------|
+| **不越权改代码** | 全局 AI 只生成 RFC、影响面分析、任务单和 prompt，代码仍由各小组负责 |
+| **先契约后实现** | 涉及接口、RPC、MQ、字段语义变化时，先定义兼容策略 |
+| **服务卡片最小化** | 每个服务只需维护职责边界、对外能力、数据归属、负责人和变更注意事项 |
+| **任务单按小组拆分** | 每个小组只收到与自己服务相关的输入、输出、验收标准 |
+
+### 一个跨服务需求的推进方式
+
+```text
+第1步：用 SERVICE-CATALOG.md 和 FEATURE-ROUTING.md 判断涉及服务
+第2步：用 SERVICE-GRAPH.md 和 CONTRACTS.md 分析调用链和契约风险
+第3步：生成 rfcs/<feature>.md，明确目标、非目标、数据流、契约变更和发布顺序
+第4步：生成 tasks/<feature>/<service-or-team>.md，拆给各小组
+第5步：各小组在自己的仓库里结合 AGENTS.md 做 vibe coding
+第6步：联调后回填 CONTRACTS.md、FEATURE-ROUTING.md 和服务卡片
+```
+
+### 给 vibe coding 的正确输入
+
+不要直接说“帮我把这个跨三个服务的功能做了”。应先生成任务单，再把任务单交给对应小组的 AI：
+
+```markdown
+你现在只负责 `order-service`，不要修改其他服务。
+请阅读本仓库 `AGENTS.md`、全局 RFC 和本服务任务单。
+先输出：
+1. 当前仓库中相关模块和文件位置；
+2. 是否需要接口契约变更；
+3. 兼容性风险；
+4. 修改计划和测试计划。
+确认后再实现。
+```
+
+一句话：**单仓库 AGENTS.md 解决“这个服务内部怎么改”；全局 ai-system-context 解决“这个需求该找哪些服务、哪些小组、按什么顺序推进”。**
