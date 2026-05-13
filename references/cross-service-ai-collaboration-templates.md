@@ -4,6 +4,107 @@
 
 ---
 
+## 0. AI 优先的生成约定
+
+跨服务 AI 协作应拆成两层：
+
+1. **项目级消费 skill**：生成 `.codebuddy/skills/cross-service-ai-collaboration/SKILL.md`，定义 AI 的任务路由、上下文加载策略、输出格式和禁止行为。
+2. **事实上下文目录**：生成 `ai-system-context/`，保存服务目录、服务关系、契约索引、功能路由和服务卡片等事实资料。
+
+所有 `ai-system-context` 文档首先服务于项目级 skill 的检索、路由和任务拆分；人类可读性是第二目标。生成时遵循：
+
+1. **必须有项目级消费 skill**：让 AI 知道如何使用 `ai-system-context/`，而不是只生成静态模板。
+2. **必须有上下文地图**：生成 `CONTEXT-MAP.md`，用结构化表格描述每个文件的职责、读取时机、依赖关系和输出用途。
+3. **每个文件开头必须写清元信息**：包含 `context_type`、`purpose`、`read_when`、`depends_on`、`update_when`。
+4. **按需加载，不全量塞上下文**：不同任务读取不同文件组合，降低 token 噪音。
+5. **明确禁止越权**：跨团队场景下，AI 只做分析、RFC、任务单和 prompt，不直接修改其他小组服务代码。
+
+推荐文件头格式：
+
+```markdown
+<!-- ai-context
+context_type: system-overview | service-catalog | service-graph | contract-index | feature-routing | playbook | prompt-template | service-card
+purpose: [本文件解决什么问题]
+read_when:
+  - [什么任务需要读取本文件]
+depends_on:
+  - [建议同时读取的文件]
+update_when:
+  - [什么变更发生时需要更新]
+-->
+```
+
+---
+
+## 0.1 `CONTEXT-MAP.md` — AI 上下文地图
+
+> 读取协议、任务路由和禁止行为由 `.codebuddy/skills/cross-service-ai-collaboration/SKILL.md` 承担；`CONTEXT-MAP.md` 只保存上下文文件的结构化索引，供项目级 skill 按任务选择最小必要上下文。
+
+````markdown
+# AI 上下文地图
+
+<!-- ai-context
+context_type: context-map
+purpose: 帮助 AI 根据任务类型选择最小必要上下文，避免全量读取造成噪音
+read_when:
+  - 任何跨服务任务开始前
+  - 不确定某个文件用途时
+depends_on:
+  - .codebuddy/skills/cross-service-ai-collaboration/SKILL.md
+update_when:
+  - ai-system-context 下新增、删除、重命名文件
+  - 文件职责发生变化
+-->
+
+## 核心文件职责
+
+| 文件 | context_type | 解决的问题 | 适合读取的任务 | 依赖文件 | 典型输出 |
+|---|---|---|---|---|---|
+| `.codebuddy/skills/cross-service-ai-collaboration/SKILL.md` | project-skill | AI 如何使用本目录 | 所有跨服务任务 | `CONTEXT-MAP.md` | 读取计划和工作流 |
+| `SYSTEM.md` | system-overview | 系统整体目标和核心业务域 | 系统理解、需求背景补全 | `SERVICE-CATALOG.md` | 系统摘要 |
+| `SERVICE-CATALOG.md` | service-catalog | 服务清单、归属、职责边界 | 服务定位、小组归属判断 | `services/*.md` | 涉及服务列表 |
+| `SERVICE-GRAPH.md` | service-graph | 服务、DB、MQ、外部系统之间的依赖 | 调用链分析、影响面分析 | `SERVICE-CATALOG.md`, `CONTRACTS.md` | 依赖路径、风险点 |
+| `CONTRACTS.md` | contract-index | HTTP/RPC/MQ 契约和字段兼容规则 | 接口变更、字段变更、MQ 变更 | `SERVICE-GRAPH.md` | 契约影响和兼容策略 |
+| `FEATURE-ROUTING.md` | feature-routing | 功能域到服务的映射 | 新需求影响面分析 | `SERVICE-CATALOG.md`, `SERVICE-GRAPH.md` | 涉及服务和推进顺序 |
+| `CHANGE-PLAYBOOKS.md` | playbook | 跨服务变更 SOP | RFC、联调、发布、回滚 | `CONTRACTS.md` | 推进计划 |
+| `VIBE-CODING-PROMPTS.md` | prompt-template | 给 AI 的任务 prompt | 交给各小组 AI 执行 | 任务单、服务卡片 | 可复制 prompt |
+| `services/<service>.md` | service-card | 单个服务职责、边界、能力和风险 | 单服务任务拆分、服务定位 | `SERVICE-CATALOG.md` | 单服务任务边界 |
+| `rfcs/<feature>.md` | feature-rfc | 具体跨服务需求方案 | 需求推进、评审、拆任务 | `FEATURE-ROUTING.md`, `CONTRACTS.md` | 小组任务输入 |
+| `tasks/<feature>/<service>.md` | team-task | 单小组 / 单服务任务 | 各小组开发前 | RFC、服务卡片 | 单服务执行 prompt |
+
+## AI 上下文加载建议
+
+### 新需求影响面分析
+最小读取集合：
+
+1. `.codebuddy/skills/cross-service-ai-collaboration/SKILL.md`
+2. `CONTEXT-MAP.md`
+3. `FEATURE-ROUTING.md`
+4. `SERVICE-GRAPH.md`
+5. `CONTRACTS.md`
+
+再根据候选服务读取对应 `services/<service>.md`。
+
+### 单服务任务拆分
+最小读取集合：
+
+1. 已确认 RFC
+2. `services/<service>.md`
+3. `CONTRACTS.md` 中相关契约
+4. `VIBE-CODING-PROMPTS.md`
+
+### 契约变更分析
+最小读取集合：
+
+1. `CONTRACTS.md`
+2. `SERVICE-GRAPH.md`
+3. 相关 `services/<provider>.md`
+4. 相关 `services/<consumer>.md`
+5. `CHANGE-PLAYBOOKS.md`
+````
+
+---
+
 ## 1. `SYSTEM.md` — 全局系统总览
 
 ````markdown
@@ -322,7 +423,10 @@ sequenceDiagram
 ## 全局分析 Prompt
 ```text
 你现在是跨微服务需求分析助手，不要直接写代码。
-请阅读全局上下文：
+请先按 `.codebuddy/skills/cross-service-ai-collaboration/SKILL.md` 和 `CONTEXT-MAP.md` 的加载协议选择上下文。
+本次建议阅读：
+- .codebuddy/skills/cross-service-ai-collaboration/SKILL.md
+- CONTEXT-MAP.md
 - SYSTEM.md
 - SERVICE-CATALOG.md
 - SERVICE-GRAPH.md

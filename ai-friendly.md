@@ -122,7 +122,13 @@ AI（无论是 Copilot、Cursor 还是 Claude Code）理解代码仓库的方式
 ### 推荐新增一个全局上下文仓库
 
 ```text
+.codebuddy/
+└── skills/
+    └── cross-service-ai-collaboration/
+        └── SKILL.md             # 项目级消费 skill：定义 AI 工作流和上下文加载策略
+
 ai-system-context/
+├── CONTEXT-MAP.md               # AI 上下文地图：每个文件的职责、读取时机、依赖关系
 ├── SYSTEM.md                    # 全局系统总览
 ├── SERVICE-CATALOG.md           # 服务目录：服务归属、职责、仓库、数据归属
 ├── SERVICE-GRAPH.md             # 服务依赖图：HTTP/RPC/MQ/DB/外部系统
@@ -147,12 +153,14 @@ ai-system-context/
 ### 一个跨服务需求的推进方式
 
 ```text
-第1步：用 SERVICE-CATALOG.md 和 FEATURE-ROUTING.md 判断涉及服务
-第2步：用 SERVICE-GRAPH.md 和 CONTRACTS.md 分析调用链和契约风险
-第3步：生成 rfcs/<feature>.md，明确目标、非目标、数据流、契约变更和发布顺序
-第4步：生成 tasks/<feature>/<service-or-team>.md，拆给各小组
-第5步：各小组在自己的仓库里结合 AGENTS.md 做 vibe coding
-第6步：联调后回填 CONTRACTS.md、FEATURE-ROUTING.md 和服务卡片
+第1步：AI 触发 .codebuddy/skills/cross-service-ai-collaboration/SKILL.md
+第2步：项目级 skill 读取 CONTEXT-MAP.md，确定本次任务的最小上下文集合
+第3步：用 FEATURE-ROUTING.md、SERVICE-CATALOG.md 判断涉及服务和小组
+第4步：用 SERVICE-GRAPH.md 和 CONTRACTS.md 分析调用链和契约风险
+第5步：生成 rfcs/<feature>.md，明确目标、非目标、数据流、契约变更和发布顺序
+第6步：生成 tasks/<feature>/<service-or-team>.md，拆给各小组
+第7步：各小组在自己的仓库里结合 AGENTS.md 做 vibe coding
+第8步：联调后回填 CONTRACTS.md、FEATURE-ROUTING.md 和服务卡片
 ```
 
 ### 给 vibe coding 的正确输入
@@ -170,4 +178,4 @@ ai-system-context/
 确认后再实现。
 ```
 
-一句话：**单仓库 AGENTS.md 解决“这个服务内部怎么改”；全局 ai-system-context 解决“这个需求该找哪些服务、哪些小组、按什么顺序推进”。**
+一句话：**单仓库 AGENTS.md 解决“这个服务内部怎么改”；项目级 `cross-service-ai-collaboration` skill 解决“AI 如何推进跨服务需求”；`ai-system-context` 解决“事实依据在哪里”。**
