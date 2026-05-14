@@ -2,6 +2,37 @@
 
 > 本文件专为 AI Coding Agent（Claude Code / Cursor / Copilot / CodeBuddy 等）设计。
 > 阅读本文件后，AI 应能独立完成常见开发任务，无需额外追问。
+> 人类新人开发者请先阅读下方「👋 新人快速入门」，再按需深入其他章节。
+
+## 👋 新人快速入门
+
+> 5 分钟了解本项目，开始你的第一次代码修改。
+
+### 这个项目是做什么的？
+[用最通俗的大白话解释，避免技术术语。让完全不懂技术的人也能理解]
+
+### 修改代码前必须知道的 3 件事
+1. **[最关键的架构约束]**：例如"所有外部调用必须走 service 层，handler 层禁止直接调 repo"
+2. **[最重要的业务规则]**：例如"订单状态只能单向流转，不允许回退"
+3. **[最容易踩的坑]**：例如"XX 字段在数据库中是枚举值，不能随便加，要通知下游"
+
+### 我想修改... → 去哪里？
+| 我想做... | 先看这个文件 | 再看这个文件 | 参考文档 |
+|-----------|------------|------------|---------|
+| 加新 HTTP 接口 | `internal/handler/` | `internal/service/` | `docs/api.md` |
+| 改业务逻辑 | `internal/service/` | 对应 `model/` | `docs/domain-model.md` |
+| 加新数据字段 | `internal/model/` | 数据库 migration | `docs/domain-model.md` |
+| 加新的 MQ 消费/生产 | `internal/service/` | `config/` 里的 MQ 配置 | `docs/api.md` |
+| 改配置项 | `config/config.yaml` | `config/config.example.yaml` | - |
+| 排查线上问题 | `docs/runbook.md` | 搜索日志关键词 | - |
+| 了解为什么这么设计 | `docs/decision-log.md` | 代码中 `// NOTE:` 注释 | - |
+
+### 第一次提交代码前的检查清单
+- [ ] 我阅读了本文件的「⛔ 禁止触碰的区域」
+- [ ] 我的修改没有超出「业务职责边界」
+- [ ] 我运行了 `make test` 且全部通过
+- [ ] 如果改了接口或数据模型，我更新了对应文档（`docs/api.md` / `docs/domain-model.md`）
+- [ ] 我没有硬编码配置项，配置走 `config/` 目录
 
 ## 🧭 服务一句话描述
 **[在此填写]**

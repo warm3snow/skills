@@ -36,12 +36,13 @@ curl http://localhost:8080/health
 
 | 文档 | 说明 |
 |------|------|
-| AGENTS.md | AI Agent 开发指南（AI 必读） |
+| AGENTS.md | AI Agent 开发指南（AI 必读，含新人快速入门） |
 | docs/architecture.md | 系统架构设计 |
 | docs/api.md | 接口文档 |
 | docs/domain-model.md | 领域模型说明 |
 | docs/decision-log.md | 设计决策日志 |
 | docs/runbook.md | 运维操作手册 |
+| docs/dev-guide.md | 代码修改快速指导（新人必读） |
 
 ## 👥 维护团队
 | 角色 | 姓名 | 联系方式 |
